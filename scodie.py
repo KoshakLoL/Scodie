@@ -36,41 +36,54 @@ class FileTree:
 
     def dialogue(self):
         dialogue_choice = str(input(">")).split()
+        if dialogue_choice:
+            command, *args = dialogue_choice
+            if args:
+                files_list = args[0].split(";")
+                del args[0]
+                if len(files_list) > 1:
+                    for file in files_list:
+                        self.dialogue_choice(command, file, args)
+                else:
+                    self.dialogue_choice(command, files_list[0], args)
+            else:
+                self.dialogue_choice(command, "", [])
+
+    def dialogue_choice(self, command, file, args):
         try:
-            if len(dialogue_choice) > 0:
-                command, *args = dialogue_choice
-                if command == "s":
+            if command == "s":
+                self.reload_files()
+                self.show_files()
+            elif command == "c" or command == "o" or command == "d" or command == "i" or command == "e":
+                if len(args) == 1 and args[0] == "-f" and command == "d":
+                    command += "f"
+                file_name = self.file_handle(file) if command != "c" else file
+                FileHandler(file_name, command) if file_name else get_directory_error("file name error", os.getcwd())
+                self.reload_files()
+            elif command == "cd":
+                if change_dir(self.file_handle(file)):
                     self.reload_files()
                     self.show_files()
-                elif command == "c" or command == "o" or command == "d" or command == "i" or command == "e":
-                    file_name = self.file_handle(args[0]) if command != "c" else args[0]
-                    FileHandler(file_name, command) if file_name else get_directory_error("no such file", os.getcwd())
-                elif command == "cd":
-                    if change_dir(self.file_handle(args[0])):
-                        self.reload_files()
-                        self.show_files()
-                    else:
-                        get_directory_error("no such directory", os.getcwd())
-                elif command == "cp" or command == "mv":
-                    file_name = self.file_handle(args[0])
-                    FileMover(file_name, self.file_handle(args[1]),
-                              command) if file_name else get_directory_error("no such file", os.getcwd())
-                elif command == "scd":
-                    show_cur_dir()
-                elif command == "cc":
-                    os.system(self.clear_command)
-                elif command == "q":
-                    self.run = False
                 else:
-                    print("unknown command")
+                    get_directory_error("no such directory", os.getcwd())
+            elif command == "cp" or command == "mv":
+                file_name = self.file_handle(file)
+                FileMover(file_name, self.file_handle(args[0]), command) if file_name else get_directory_error(
+                    "no such file", os.getcwd())
+            elif command == "scd":
+                show_cur_dir()
+            elif command == "cc":
+                os.system(self.clear_command)
+            elif command == "q":
+                self.run = False
+            else:
+                print("unknown command")
         except IndexError:
             print("pass normal arguments pls")
 
     def file_handle(self, file_type):
         try:
-            if file_type in self.files_list:
-                return file_type
-            elif os.path.exists(file_type):
+            if os.path.exists(file_type):
                 return os.path.abspath(file_type)
             elif int(file_type) <= len(self.files_list):
                 return self.files_list[int(file_type)]
@@ -88,8 +101,8 @@ class FileHandler:
             self.file_create()
         elif mode == "o":
             self.file_open()
-        elif mode == "d":
-            if input("you sure? (y if yes): ") == "y":
+        elif mode == "d" or mode == "df":
+            if mode == "df" or input(f"deleting {self.file}, you sure? (y if yes): ") == "y":
                 self.file_delete()
         elif mode == "i":
             self.file_info()
