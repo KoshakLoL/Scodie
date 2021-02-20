@@ -1,5 +1,5 @@
 # Scodie
-_Python File Manager, made with simplicity in mind!_
+_Python File Manager, made with simplicity and speed in mind!_
 
 Usage:
 --------
