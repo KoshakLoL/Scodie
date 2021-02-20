@@ -188,7 +188,7 @@ def get_directory_error(error, directory):
 
 
 def show_cur_dir():
-    print(f"{os.getcwd()}")
+    print(os.getcwd())
 
 
 def check_file_name(file):
