@@ -204,7 +204,7 @@ def show_cur_dir():
 
 
 def check_file_name(file):
-    return all([letter not in BAD_NAMES for letter in file])
+    return not any([letter in BAD_NAMES for letter in file])
 
 
 if __name__ == "__main__":
