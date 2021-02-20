@@ -191,7 +191,8 @@ def get_clear():
         return "cls"
     elif platform.startswith("darwin"):
         return "printf '\33c\e[3J'"
-    return "clear"
+    else:
+        return "clear"
 
 
 def get_directory_error(error, directory):
@@ -203,7 +204,7 @@ def show_cur_dir():
 
 
 def check_file_name(file):
-    return True if all([letter not in BAD_NAMES for letter in file]) else False
+    return all([letter not in BAD_NAMES for letter in file])
 
 
 if __name__ == "__main__":
