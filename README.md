@@ -5,12 +5,12 @@ Usage:
 --------
 ```
 >s # Show files of the current directory
->c [name] # Create text file or directory
+>c [name] # Create file or directory
 >o [name/number/path] # Open file (can execute .py!)
 >d [name/number/path] # Delete file
 >i [name/number/path] # Info about a file
 >e [name] # Edit text file
->cd [directory] # Change directory
+>cd [directory] # Change Directory
 >cp [name/number/path] [name/number/path] # Copy file
 >mv [name/number/path] [path] # Move file
 >scd # Show Current Directory

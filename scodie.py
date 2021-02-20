@@ -98,13 +98,11 @@ class FileHandler:
 
     def file_create(self):
         if check_file_name(self.file):
-            if self.ext in TEXT_FILES:
+            if self.ext:
                 with open(self.file, "w"):
                     pass
-            elif not self.ext:
-                os.mkdir(self.file)
             else:
-                print("text files only")
+                os.mkdir(self.file)
         else:
             print("illegal file name")
 
