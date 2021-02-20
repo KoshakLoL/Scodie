@@ -9,10 +9,12 @@ from humanize import naturalsize
 from tabulate import tabulate
 from vlc import MediaPlayer
 
-TEXT_FILES = ["txt", "log", "py"]
+TEXT_FILES = ["txt", "log", "py", "md"]
 IMAGE_FILES = ["jpg", "png", "jpeg", "webp"]
 BROWSER_FILES = ["mp4", "mkv", "html"]
 SOUND_FILES = ["mp3", "wav", "ogg"]
+BAD_NAMES = ["#", "%", "&", "{", "}", "\\", "<", ">", "*", "?", "/",
+             "", "$", "!", "'", "\"", ":", "@", "+", "`", "|", "="]
 
 
 class FileTree:
@@ -37,22 +39,22 @@ class FileTree:
         try:
             if len(dialogue_choice) > 0:
                 command, *args = dialogue_choice
-                if command == "o" or command == "d" or command == "i" or command == "e":
-                    file_name = self.file_handle(args[0])
-                    FileHandler(file_name, command) if file_name else get_directory_error("no such file")
+                if command == "s":
+                    self.reload_files()
+                    self.show_files()
+                elif command == "c" or command == "o" or command == "d" or command == "i" or command == "e":
+                    file_name = self.file_handle(args[0]) if command != "c" else args[0]
+                    FileHandler(file_name, command) if file_name else get_directory_error("no such file", os.getcwd())
                 elif command == "cd":
                     if change_dir(self.file_handle(args[0])):
                         self.reload_files()
                         self.show_files()
                     else:
-                        get_directory_error("no such directory")
-                elif command == "s":
-                    self.reload_files()
-                    self.show_files()
+                        get_directory_error("no such directory", os.getcwd())
                 elif command == "cp" or command == "mv":
                     file_name = self.file_handle(args[0])
                     FileMover(file_name, self.file_handle(args[1]),
-                              command) if file_name else get_directory_error("no such file")
+                              command) if file_name else get_directory_error("no such file", os.getcwd())
                 elif command == "scd":
                     show_cur_dir()
                 elif command == "cc":
@@ -79,18 +81,32 @@ class FileTree:
 
 class FileHandler:
     def __init__(self, file, mode):
-        global TEXT_FILES, IMAGE_FILES, BROWSER_FILES, SOUND_FILES
+        global TEXT_FILES, IMAGE_FILES, BROWSER_FILES, SOUND_FILES, BAD_NAMES
         self.file = file
         self.ext = os.path.splitext(file)[1][1:]
-        if mode == "o":
+        if mode == "c":
+            self.file_create()
+        elif mode == "o":
             self.file_open()
-        elif mode == "del":
+        elif mode == "d":
             if input("you sure? (y if yes): ") == "y":
                 self.file_delete()
         elif mode == "i":
             self.file_info()
         elif mode == "e":
             self.file_edit()
+
+    def file_create(self):
+        if check_file_name(self.file):
+            if self.ext in TEXT_FILES:
+                with open(self.file, "w"):
+                    pass
+            elif not self.ext:
+                os.mkdir(self.file)
+            else:
+                print("text files only")
+        else:
+            print("illegal file name")
 
     def file_open(self):
         if self.ext in TEXT_FILES:
@@ -112,8 +128,7 @@ class FileHandler:
             input("press enter to stop")
             p.stop()
         else:
-            get_directory_error("could not open file or directory")
-            return
+            get_directory_error("could not open file or directory", os.getcwd())
 
     def file_delete(self):
         if self.ext:
@@ -137,11 +152,13 @@ class FileMover:
     def __init__(self, file, path, mode):
         self.file = file
         self.path = path
-        if os.path.exists(self.file) and os.path.exists(self.path):
+        if os.path.exists(self.path):
             if mode == "cp":
                 self.copy_file()
             elif mode == "mv":
                 self.move_file()
+        else:
+            print("wrong path")
 
     def copy_file(self):
         if self.file not in os.listdir(self.path):
@@ -163,16 +180,19 @@ def get_clear():
         return "cls"
     elif platform.startswith("darwin"):
         return "printf '\33c\e[3J'"
-    else:
-        return "clear"
+    return "clear"
 
 
-def get_directory_error(error):
-    print(f"{error} in\n{os.getcwd()}")
+def get_directory_error(error, directory):
+    print(f"{error} in\n{directory}")
 
 
 def show_cur_dir():
     print(f"{os.getcwd()}")
+
+
+def check_file_name(file):
+    return True if all([letter not in BAD_NAMES for letter in file]) else False
 
 
 if __name__ == "__main__":
