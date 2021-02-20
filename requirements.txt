@@ -1,0 +1,4 @@
+Pillow~=8.1.0
+humanize~=3.2.0
+tabulate~=0.8.8
+python-vlc~=3.0.11115
